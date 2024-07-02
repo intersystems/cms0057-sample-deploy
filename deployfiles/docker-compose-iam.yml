@@ -1,0 +1,122 @@
+# to execute, run $ docker-compose -f <your-docker-compose>.yml --env-file <your-product>.env up
+# e.g. $ docker-compose -f ./deployfiles/docker-compose.yml --env-file ./deployfiles/cms0057.container.env up
+version: '3.7'
+networks:
+  federated-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET:-192.168.20.0/24}
+services:
+  iam-migrations:
+    image: ${ISC_IAM_IMAGE}
+    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    command: bash -c "kong migrations bootstrap; kong migrations up; kong migrations finish -v -vv"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-iam}
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-iam}
+      KONG_PG_USER: ${KONG_PG_USER:-iam}
+      KONG_CASSANDRA_CONTACT_POINTS: db
+      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
+    restart: on-failure
+    links:
+      - db:db
+    extra_hosts:
+      - ${HOSTNAME}:${HOSTNAME_IP}
+  iam:
+    image: ${ISC_IAM_IMAGE}
+    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    entrypoint: ["/bin/sh", "-c", "export ISC_CA_CERT=$(cat /certs/tls.crt) && /docker-entrypoint.sh kong docker-start"]
+    depends_on:
+      iam-migrations:
+        condition: service_completed_successfully
+    environment:
+      KONG_SSL: "on"
+      KONG_SSL_CERT: /certs/tls.crt
+      KONG_SSL_CERT_KEY: /certs/tls.key
+      KONG_ADMIN_SSL_CERT: /certs/tls.crt
+      KONG_ADMIN_SSL_CERT_KEY: /certs/tls.key
+      KONG_ADMIN_GUI_SSL_CERT: /certs/tls.crt
+      KONG_ADMIN_GUI_SSL_CERT_KEY: /certs/tls.key
+      KONG_STATUS_SSL_CERT: /certs/tls.crt
+      KONG_STATUS_SSL_CERT_KEY: /certs/tls.key
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8444 ssl
+      KONG_ANONYMOUS_REPORTS: 'off'
+      KONG_CASSANDRA_CONTACT_POINTS: db
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-iam}
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-iam}
+      KONG_PG_USER: ${KONG_PG_USER:-iam}
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_PORTAL: 'on'
+      KONG_PORTAL_GUI_PROTOCOL: https
+      KONG_PORTAL_GUI_HOST: ${HOSTNAME}:8446
+      KONG_ADMIN_GUI_URL: https://${HOSTNAME}:8445
+      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
+    links:
+      - db:db
+    ports:
+      - target: 8443
+        published: 8446
+        protocol: tcp
+      - target: 8444
+        published: 8444
+        protocol: tcp
+      - target: 8445
+        published: 8445
+        protocol: tcp
+    restart: on-failure
+    extra_hosts:
+      - ${HOSTNAME}:${HOSTNAME_IP}
+    volumes:
+      - ./webgateway/certificate/ssl-cert.key:/certs/tls.key
+      - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
+  db:
+    image: postgres:14.5
+    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    environment:
+      POSTGRES_DB: ${KONG_PG_DATABASE:-iam}
+      POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:-iam}
+      POSTGRES_USER: ${KONG_PG_USER:-iam}
+    volumes:
+      - 'pgdata14:/var/lib/postgresql/data'
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${KONG_PG_USER:-iam}"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+    stdin_open: true
+    extra_hosts:
+      - ${HOSTNAME}:${HOSTNAME_IP}
+  iam-register:
+    image: alpine/curl
+    environment:
+     IAM_HOSTNAME: ${HOSTNAME}
+     IAM_PORT: 8444
+     IAM_USER: IAM
+     IAM_USER_PWD: ${IAM_USER_PWD}
+     INSTANCE_WEBGATEWAY_HOSTNAME: ${HOSTNAME}
+     INSTANCE_WEBGATEWAY_PORT: ${WEBGATEWAY_SECURE_PORT:-8443}
+    depends_on:
+      - iam
+    extra_hosts:
+      - ${HOSTNAME}:${HOSTNAME_IP}
+    volumes:
+      - ./iam-register-entrypoint.sh:/iam-register-entrypoint.sh
+      - ./iam-services-config.JSON:/iam-services-config.JSON
+      - ./webgateway/certificate/ssl-cert.key:/certs/tls.key
+      - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
+    entrypoint: ["/bin/sh", "/iam-register-entrypoint.sh"]
+    restart: on-failure
+volumes:
+  pgdata14:

@@ -1,0 +1,3 @@
+[Actions]
+ModifyUser:Name=IAM,ChangePassword=0,PasswordExternal=<YourIAMPassword>,Enabled=1
+ModifyApplication:Name=/api/iam,Enabled=1

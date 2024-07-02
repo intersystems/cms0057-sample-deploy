@@ -1,0 +1,58 @@
+# to execute, run $ docker-compose -f <your-docker-compose>.yml --env-file <your-product>.env up
+# e.g. $ docker-compose -f ./deployfiles/docker-compose.yml --env-file ./deployfiles/cms0057.container.env up
+version: '3.7'
+networks:
+  federated-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET:-192.168.10.0/24}
+services:
+  webgateway:
+    image: ${WEBGATEWAY_IMAGE_PATH}:${WEBGATEWAY_IMAGE_VERSION}
+    init: true
+    hostname: ${HOSTNAME}
+    container_name: ${COMPOSE_PROJECT_NAME}-webgateway
+    ports:
+    - ${WEBGATEWAY_INSECURE_PORT:-881}:80
+    - ${WEBGATEWAY_SECURE_PORT:-8443}:443
+    restart: "no"
+    command:
+      --ssl
+    volumes:
+    - ./webgateway/CSP.ini:/opt/webgateway/bin/CSP.ini
+    - ./webgateway/CSP.conf:/etc/apache2/mods-available/CSP.conf
+    - ./webgateway/certificate/ssl-cert.key:/irissys/tls/webgateway/tls.key
+    - ./webgateway/certificate/ssl-cert.pem:/irissys/tls/webgateway/tls.crt
+    networks:
+      federated-network:
+        ipv4_address: ${WEBGATEWAY_NETWORK_IP_ADDRESS:-192.168.10.10}
+  instance:
+    image: ${HS_IMAGE_PATH}:${HS_IMAGE_VERSION}
+    init: true
+    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    container_name: ${COMPOSE_PROJECT_NAME}-instance
+    ports:
+    - ${INSTANCE_SUPERSERVER_PORT:-1972}:1972
+    - ${INSTANCE_WEBSERVER_PORT:-52773}:52773
+    extra_hosts:
+    - ${HOSTNAME}:${HOSTNAME_IP}
+    restart: "no"
+    command:
+      --key ${ISC_CONFIG_DIRECTORY:-/config/iris}/iris.key
+      --instance ${INSTANCE_NAME}
+    environment:
+      - ISC_CPF_MERGE_FILE_NAME=${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
+      - ISC_CONFIG_DIRECTORY=${ISC_CONFIG_DIRECTORY:-/config/iris}
+      - ISC_DATA_DIRECTORY=${ISC_DATA_DIRECTORY:-/dur/iris}
+      - ISC_CPF_MERGE_FILE=${ISC_CONFIG_DIRECTORY:-/config/iris}/${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
+    volumes:
+    - type: bind
+      source: ${EXTERNAL_IRIS_CONFIG_DIRECTORY:-../config/iris}
+      target: ${ISC_CONFIG_DIRECTORY:-/config/iris}
+    - type: bind
+      source: ${EXTERNAL_ISC_DATA_ROOT_DIRECTORY:-../dur}
+      target: ${ISC_DATA_ROOT_DIRECTORY:-/dur}
+    networks:
+      federated-network:
+        ipv4_address: ${INSTANCE_NETWORK_IP_ADDRESS:-192.168.10.11}

@@ -1,0 +1,46 @@
+{
+    "services": [
+        {
+            "name": "PDexMMDemoService",
+            "url": "/csp/healthshare/hshp-pdexmm",
+            "routes": [
+                {
+                    "name": "SettingsRoute",
+                    "paths": [
+                        "/app/api/settings"
+                    ],
+                    "protocols": [
+                        "https"
+                    ],
+                    "strip_path": false
+                }
+            ]
+        },
+        {
+            "name": "MonitorService",
+            "url": "/api/monitor",
+            "routes": [
+                {
+                    "name": "MetricsRoute",
+                    "paths": [
+                        "/metrics"
+                    ],
+                    "protocols": [
+                        "https"
+                    ],
+                    "strip_path": false
+                },
+                {
+                    "name": "AlertRoute",
+                    "paths": [
+                        "/alerts"
+                    ],
+                    "protocols": [
+                        "https"
+                    ],
+                    "strip_path": false
+                }
+            ]
+        }
+    ]
+}
