@@ -96,7 +96,7 @@ However, before this can be run, the values in `.container.env` need to be popul
 In below sections, when environment variables are referenced, they will only be referenced
 by name and their description can be looked up in one of the above referenced sources.
 
-You will notice that the variables themselves or their corresponding defaults in the `docker-compose.yml` file point to other relative directories/files which are referenced in the next few sections.
+You will notice that the variables themselves or their corresponding defaults in the `docker-compose.yml` file point to other relative directories/files which are referenced in the next few sections. There are 2 docker-compose samples, one of them with IAM enabled.
 
 #### web-gateway
 
