@@ -1,13 +1,13 @@
 <!-- omit in toc -->
 # cms0057-sample-deploy
 
-This repository contains sample deployment files to deploy InterSystems Payer Services Applications as container stacks. Note that these are sample files intended to be used along with the [HealthShare user documentation](https://docs.intersystems.com/hs202311/csp/docbook/DocBook.UI.Page.cls).
+This repository contains sample deployment files to deploy InterSystems Payer Services Applications as container stacks. Note that these are sample files intended to be used along with the [InterSystems Payer Service User Documentation](https://docs.intersystems.com/hs202311/csp/docbook/DocBook.UI.Page.cls).
 
 **These sample files ARE NOT intended for direct usage in production environments.**
 
-A single HealthShare application consists of a stack with two containers:
-a Web Gateway container and a HealthShare instance container.
-Below we describe the sample files provided in this repository to deploy such HealthShare applications.
+A single Payer Service application consists of a stack with two containers:
+a Web Gateway container and an InterSystems IRIS For Health instance container.
+Below we describe the sample files provided in this repository to deploy such solution applications.
 
 - [Structure](#structure)
 - [sample\_deploy](#sample_deploy)
