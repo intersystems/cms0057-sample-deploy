@@ -1,5 +1,5 @@
 # to execute, run $ docker-compose -f <your-docker-compose>.yml --env-file <your-product>.env up
-# e.g. $ docker-compose -f ./deployfiles/docker-compose.yml --env-file ./deployfiles/cms0057.container.env up
+# e.g. $ docker-compose -f ./deployfiles/docker-compose-hp.yml --env-file ./deployfiles/hp.container.env up
 version: '3.7'
 networks:
   federated-network:
@@ -28,9 +28,9 @@ services:
       federated-network:
         ipv4_address: ${WEBGATEWAY_NETWORK_IP_ADDRESS:-192.168.10.10}
   instance:
-    image: ${HS_IMAGE_PATH}:${HS_IMAGE_VERSION}
+    image: ${HP_IMAGE_PATH}:${HP_IMAGE_VERSION}
     init: true
-    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
     container_name: ${COMPOSE_PROJECT_NAME}-instance
     ports:
     - ${INSTANCE_SUPERSERVER_PORT:-1972}:1972

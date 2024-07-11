@@ -15,7 +15,8 @@ Below we describe the sample files provided in this repository to deploy such so
 - [sample\_deploy](#sample_deploy)
   - [config/iris](#configiris)
   - [deployfiles](#deployfiles)
-    - [docker-compose and container.env](#docker-compose-and-containerenv)
+    - [docker-compose-hp and hp.container.env](#docker-compose-hp-and-hpcontainerenv)
+    - [docker-compose-iam and iam.container.env](#docker-compose-iam-and-iamcontainerenv)
     - [web-gateway](#web-gateway)
     - [iam-register-entrypoint.sh](#iam-register-entrypointsh)
     - [iam-services-config.JSON](#iam-services-configjson)
@@ -46,10 +47,12 @@ This directory structure is as follows:
  ┃ ┃ ┃ ┗ 📜ssl-cert.pem
  ┃ ┃ ┣ 📜CSP.conf
  ┃ ┃ ┗ 📜CSP.ini
+ ┃ ┣ 📜hp.container.env
+ ┃ ┣ 📜iam.container.env
+ ┃ ┣ 📜docker-compose-hp.yml
+ ┃ ┣ 📜docker-compose-iam.yml
  ┃ ┣ 📜iam-register-entrypoint.sh
- ┃ ┣ 📜iam-services-config.json
- ┃ ┣ 📜container.env
- ┃ ┗ 📜docker-compose.yml
+ ┃ ┗ 📜iam-services-config.json
  ┣ 📂data-ingestion
  ┃ ┗ 📂Data
 
@@ -74,16 +77,26 @@ Environment variables related to this directory:
 ### deployfiles
 All deployment related files. This includes:
 
-- [docker-compose and container.env files](#docker-compose-and-container.env)
-- [web gateway deployment files](#web-gateway)
-- [IAM setup script](#iam-register-entrypoint.sh)
-- [IAM configuration json file](#iam-services-config.JSON)
+- [Structure](#structure)
+- [sample\_deploy](#sample_deploy)
+  - [config/iris](#configiris)
+  - [deployfiles](#deployfiles)
+    - [docker-compose-hp and hp.container.env](#docker-compose-hp-and-hpcontainerenv)
+    - [docker-compose-iam and iam.container.env](#docker-compose-iam-and-iamcontainerenv)
+    - [web-gateway](#web-gateway)
+    - [iam-register-entrypoint.sh](#iam-register-entrypointsh)
+    - [iam-services-config.JSON](#iam-services-configjson)
+  - [data-ingestion](#data-ingestion)
+- [sample\_configs](#sample_configs)
 
-#### docker-compose and container.env
+Note that we have deployfiles for both Payer Services and InterSystems API Manager (IAM) containers in this directory.
+However, they run in their own independent container stacks.
 
-To deploy the container stack, the following command is run:
+#### docker-compose-hp and hp.container.env
+
+To deploy the Payer Services solution container stack, the following command is run:
 ```bash
-docker-compose -f docker-compose.yml --env-file=cms0057.container.env up
+docker-compose -f docker-compose-hp.yml --env-file=hp.container.env up
 ```
 
 This command will configure a single Payer Services application stack consisting of two containers: Web Gateway instance and IRIS For Health instance.
@@ -93,23 +106,35 @@ In the sections below, when environment variables are referenced, they will only
 
 You will notice that the variables themselves, or their corresponding defaults in the `docker-compose.yml` file, point to other relative directories or files which are referenced in the next few sections. There are two docker-compose samples provided, one of which has IAM enabled.
 
+#### docker-compose-iam and iam.container.env
+You need `iam-register-entrypoint.sh` and `iam-services-config.JSON` configured to use IAM with your solution stack.
+
+To deploy the Intersystems API Manager container stack, the following command is run:
+```bash
+docker-compose -f docker-compose-iam.yml --env-file=iam.container.env up
+```
+
+Similarly, this command will configure a single IAM stack consisting of 4 containers: iam, iam-register, iam-migrations, and db.
+
+This IAM stack is independent from solution container stack, it uses http connection to communicate with Payer Services API configured with IAM. Make sure your solution container stack and IAM stack are within the same network subnet.
+
 #### web-gateway
 
 This subdirectory contains the files necessary to deploy an InterSystems Web Gateway image. which is documented in the [InterSystems Web Gateway documentation](https://docs.intersystems.com/irislatest/csp/docbook/DocBook.UI.Page.cls?KEY=GCGI).
 
-If you are already familiar with the InterSystems Web Gateway, a sample docker-compose file for deploying an InterSystems Web Gateway is provided in the [InterSystems Community gitub repo](https://github.com/intersystems-community/webgateway-examples/tree/master/demo-compose).
+If you are already familiar with the InterSystems Web Gateway, a sample docker-compose file for deploying an InterSystems Web Gateway is provided in the [InterSystems Community Github repo](https://github.com/intersystems-community/webgateway-examples/tree/master/demo-compose).
 
 #### iam-register-entrypoint.sh
 
-An entrypoint script, containing curl calls to register settings with the IAM container. You should not have to edit this.
+Required for IAM. An entrypoint script, containing curl calls to register settings with the IAM container. You should not have to edit this.
 
 #### iam-services-config.JSON
 
-A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the  "services".
+Required for IAM. A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the  "services".
 
 ### data-ingestion
 
-This directory does not exist in the sample directory structure but you can create it on your host, along with the `Data` subdirectory as a bind mount.
+Optional. This directory does not exist in the sample directory structure but you can create it on your host, along with the `Data` subdirectory as a bind mount.
 
 Environment variables related to this directory: 
 - `EXTERNAL_ISC_DATA_ROOT_DIRECTORY`
@@ -117,4 +142,4 @@ Environment variables related to this directory:
 
 ## sample_configs
 
-This directory contains sample files for your solution application.
+This directory contains sample config files for your solution application. The configs are not for direct use and are subject to changes.

@@ -1,5 +1,5 @@
 # to execute, run $ docker-compose -f <your-docker-compose>.yml --env-file <your-product>.env up
-# e.g. $ docker-compose -f ./deployfiles/docker-compose-iam.yml --env-file ./deployfiles/cms0057.container.env up
+# e.g. $ docker-compose -f ./deployfiles/docker-compose-iam.yml --env-file ./deployfiles/iam.container.env up
 version: '3.7'
 networks:
   federated-network:
@@ -10,7 +10,7 @@ networks:
 services:
   iam-migrations:
     image: ${ISC_IAM_IMAGE}
-    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
     command: bash -c "kong migrations bootstrap; kong migrations up; kong migrations finish -v -vv"
     depends_on:
       db:
@@ -30,7 +30,7 @@ services:
       - ${HOSTNAME}:${HOSTNAME_IP}
   iam:
     image: ${ISC_IAM_IMAGE}
-    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
     entrypoint: ["/bin/sh", "-c", "export ISC_CA_CERT=$(cat /certs/tls.crt) && /docker-entrypoint.sh kong docker-start"]
     depends_on:
       iam-migrations:
@@ -82,7 +82,7 @@ services:
       - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
   db:
     image: postgres:14.5
-    hostname: ${HS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
     environment:
       POSTGRES_DB: ${KONG_PG_DATABASE:-iam}
       POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:-iam}
