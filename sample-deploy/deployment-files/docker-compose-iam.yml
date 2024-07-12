@@ -10,7 +10,7 @@ networks:
 services:
   iam-migrations:
     image: ${ISC_IAM_IMAGE}
-    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IAM_UNIQUE_HOSTNAME}
     command: bash -c "kong migrations bootstrap; kong migrations up; kong migrations finish -v -vv"
     depends_on:
       db:
@@ -22,15 +22,15 @@ services:
       KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-iam}
       KONG_PG_USER: ${KONG_PG_USER:-iam}
       KONG_CASSANDRA_CONTACT_POINTS: db
-      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
+      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${IRIS_HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
     restart: on-failure
     links:
       - db:db
     extra_hosts:
-      - ${HOSTNAME}:${HOSTNAME_IP}
+      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
   iam:
     image: ${ISC_IAM_IMAGE}
-    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IAM_UNIQUE_HOSTNAME}
     entrypoint: ["/bin/sh", "-c", "export ISC_CA_CERT=$(cat /certs/tls.crt) && /docker-entrypoint.sh kong docker-start"]
     depends_on:
       iam-migrations:
@@ -59,9 +59,9 @@ services:
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_PORTAL: 'on'
       KONG_PORTAL_GUI_PROTOCOL: https
-      KONG_PORTAL_GUI_HOST: ${HOSTNAME}:8446
-      KONG_ADMIN_GUI_URL: https://${HOSTNAME}:8445
-      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
+      KONG_PORTAL_GUI_HOST: ${IRIS_HOSTNAME}:8446
+      KONG_ADMIN_GUI_URL: https://${IRIS_HOSTNAME}:8445
+      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${IRIS_HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
     links:
       - db:db
     ports:
@@ -76,13 +76,13 @@ services:
         protocol: tcp
     restart: on-failure
     extra_hosts:
-      - ${HOSTNAME}:${HOSTNAME_IP}
+      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
     volumes:
       - ./webgateway/certificate/ssl-cert.key:/certs/tls.key
       - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
   db:
     image: postgres:14.5
-    hostname: ${IRIS_INSTANCE_UNIQUE_HOSTNAME}
+    hostname: ${IAM_UNIQUE_HOSTNAME}
     environment:
       POSTGRES_DB: ${KONG_PG_DATABASE:-iam}
       POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:-iam}
@@ -97,20 +97,20 @@ services:
     restart: on-failure
     stdin_open: true
     extra_hosts:
-      - ${HOSTNAME}:${HOSTNAME_IP}
+      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
   iam-register:
     image: alpine/curl
     environment:
-     IAM_HOSTNAME: ${HOSTNAME}
+     IAM_HOSTNAME: ${IRIS_HOSTNAME}
      IAM_PORT: 8444
      IAM_USER: IAM
      IAM_USER_PWD: ${IAM_USER_PWD}
-     INSTANCE_WEBGATEWAY_HOSTNAME: ${HOSTNAME}
+     INSTANCE_WEBGATEWAY_HOSTNAME: ${IRIS_HOSTNAME}
      INSTANCE_WEBGATEWAY_PORT: ${WEBGATEWAY_SECURE_PORT:-8443}
     depends_on:
       - iam
     extra_hosts:
-      - ${HOSTNAME}:${HOSTNAME_IP}
+      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
     volumes:
       - ./iam-register-entrypoint.sh:/iam-register-entrypoint.sh
       - ./iam-services-config.JSON:/iam-services-config.JSON
