@@ -48,10 +48,10 @@ services:
       - ISC_CPF_MERGE_FILE=${ISC_CONFIG_DIRECTORY:-/config/iris}/${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
     volumes:
     - type: bind
-      source: ${EXTERNAL_IRIS_CONFIG_DIRECTORY:-../config/iris}
+      source: ${EXTERNAL_IRIS_CONFIG_DIRECTORY:-./config/iris}
       target: ${ISC_CONFIG_DIRECTORY:-/config/iris}
     - type: bind
-      source: ${EXTERNAL_ISC_DATA_ROOT_DIRECTORY:-../dur}
+      source: ${EXTERNAL_ISC_DATA_ROOT_DIRECTORY:-./dur}
       target: ${ISC_DATA_ROOT_DIRECTORY:-/dur}
     networks:
       federated-network:
