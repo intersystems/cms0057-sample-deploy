@@ -1,5 +1,5 @@
 # to execute, run $ docker-compose -f <your-docker-compose>.yml --env-file <your-product>.env up
-# e.g. $ docker-compose -f ./deployfiles/docker-compose-hp.yml --env-file ./deployfiles/hp.container.env up
+# e.g. $ docker-compose -f docker-compose-hp.yml --env-file hp.container.env up
 version: '3.7'
 networks:
   federated-network:
