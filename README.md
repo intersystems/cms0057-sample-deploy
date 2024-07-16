@@ -21,7 +21,6 @@ Below we describe the sample files provided in this repository to deploy such so
   - [docker-compose-iam and iam.container.env](#docker-compose-iam-and-iamcontainerenv)
   - [iam-register-entrypoint.sh](#iam-register-entrypointsh)
   - [iam-services-config.JSON](#iam-services-configjson)
-  - [data-ingestion](#data-ingestion)
 - [sample\_configs](#sample_configs)
 
 ## Structure
@@ -67,10 +66,7 @@ The directory structure is as follows:
  ┣ 📜docker-compose-hp.yml
  ┣ 📜docker-compose-iam.yml
  ┣ 📜iam-register-entrypoint.sh
- ┣ 📜iam-services-config.json
- ┗ 📂data-ingestion
-   ┗ 📂Data
-
+ ┗ 📜iam-services-config.json
 ```
 
 Below we break down the roles of the various directories and files. For directories and files whose locations can be changed, the corresponding environment variables that control the directory locations are also referenced. Note that the directory-related environment variables are optional. If you do not specify directory-related environment variable values, then you **must** use the default directory structure referenced in the above image and detailed below.
@@ -78,7 +74,7 @@ Below we break down the roles of the various directories and files. For director
 ### config/iris
 
 This directory contains all necessary configuration-related files used at container deployment time for InterSystems IRIS-specific configuration.  
-**NOTE:** Any files under this directory are NOT used during the active lifetime of the  container. Other storage locations are used for storing data needed during the lifetime of a running container.
+**NOTE:** Any files under this directory are NOT used during the active lifetime of the container. Other storage locations are used for storing data needed during the lifetime of a running container. No data ingestion directory is provided by default, you may also pass data through REST APIs.
 
 This directory MUST consist of, at a minimum, an iris.key file for the license key of the corresponding solution image that is being deployed. If you wish to use InterSystems API Manager features for your solution, then you must use an IAM-enabled license.
 
@@ -128,14 +124,6 @@ Required for IAM. An entrypoint script, containing curl calls to register settin
 ### iam-services-config.JSON
 
 Required for IAM. A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the  "services".
-
-### data-ingestion
-
-Optional. This directory does not exist in the sample directory structure but you can create it on your host, along with the `Data` subdirectory as a bind mount.
-
-Environment variables related to this directory: 
-- `EXTERNAL_ISC_DATA_ROOT_DIRECTORY`
-- `ISC_DATA_ROOT_DIRECTORY`
 
 ## sample_configs
 
