@@ -1,23 +1,13 @@
 {
     "services": [
         {
-            "name": "<Solution Container HostName>-Service",
-            "url": "https://<IRIS_HOSTNAME>:<WEBGATEWAY_SECURE_PORT>",
+            "name": "<Component Name>",
+            "url": "https://<HOSTNAME>:<WEBGATEWAY_SECURE_PORT>",
             "routes": [
                 {
                     "name": "API_Route_1",
                     "paths": [
-                        "/<UNIQUE_INSTANCE_NAME_1>"
-                    ],
-                    "protocols": [
-                        "https"
-                    ],
-                    "strip_path": true
-                },
-                {
-                    "name": "API_Route_2",
-                    "paths": [
-                        "/<UNIQUE_INSTANCE_NAME_2>"
+                        "/<IRIS_INSTANCE_UNIQUE_HOSTNAME_1>"
                     ],
                     "protocols": [
                         "https"
@@ -27,13 +17,13 @@
             ]
         },
         {
-            "name": "<Solution Container HostName>-Service",
-            "url": "https://<ANOTHER_IRIS_HOSTNAME>:<ANOTHER_WEBGATEWAY_SECURE_PORT>",
+            "name": "<Another Component Name>",
+            "url": "https://<ANOTHER_HOSTNAME>:<ANOTHER_WEBGATEWAY_SECURE_PORT>",
             "routes": [
                 {
-                    "name": "API_Route_3",
+                    "name": "API_Route_2",
                     "paths": [
-                        "/<UNIQUE_INSTANCE_NAME_3>"
+                        "/<IRIS_INSTANCE_UNIQUE_HOSTNAME_2>"
                     ],
                     "protocols": [
                         "https"
