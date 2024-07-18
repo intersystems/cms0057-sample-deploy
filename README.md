@@ -131,7 +131,12 @@ Required for IAM. An entrypoint script, containing curl calls to register settin
 
 ### iam-services-config.JSON
 
-Required for IAM. A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the  "services".
+Required for IAM. A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the "services".
+
+ - The `url` of the service should be a FQDN pointing to the solution component container.
+ - Under each service, you may add one or more routes to match requests:
+   - Each route should have its unique `name` and `paths`(as a prefix in IAM-redirected endpoint, e.g. unique instance name)                             
+   - Use `https` for `protocol`, and set `strip path` to `true`.
 
 ## sample_configs
 

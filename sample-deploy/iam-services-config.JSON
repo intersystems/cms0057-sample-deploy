@@ -1,18 +1,44 @@
 {
     "services": [
         {
-            "name": "PDexMMDemoService",
-            "url": "/csp/healthshare/hshp-pdexmm",
+            "name": "<Solution Container HostName>-Service",
+            "url": "https://<IRIS_HOSTNAME>:<WEBGATEWAY_SECURE_PORT>",
             "routes": [
                 {
-                    "name": "SettingsRoute",
+                    "name": "API_Route_1",
                     "paths": [
-                        "/app/api/settings"
+                        "/<UNIQUE_INSTANCE_NAME_1>"
                     ],
                     "protocols": [
                         "https"
                     ],
-                    "strip_path": false
+                    "strip_path": true
+                },
+                {
+                    "name": "API_Route_2",
+                    "paths": [
+                        "/<UNIQUE_INSTANCE_NAME_2>"
+                    ],
+                    "protocols": [
+                        "https"
+                    ],
+                    "strip_path": true
+                }
+            ]
+        },
+        {
+            "name": "<Solution Container HostName>-Service",
+            "url": "https://<ANOTHER_IRIS_HOSTNAME>:<ANOTHER_WEBGATEWAY_SECURE_PORT>",
+            "routes": [
+                {
+                    "name": "API_Route_3",
+                    "paths": [
+                        "/<UNIQUE_INSTANCE_NAME_3>"
+                    ],
+                    "protocols": [
+                        "https"
+                    ],
+                    "strip_path": true
                 }
             ]
         },
