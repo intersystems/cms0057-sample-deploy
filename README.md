@@ -101,7 +101,7 @@ If you are already familiar with the InterSystems Web Gateway, a sample docker-c
 
 ### docker-compose-hp and hp.container.env
 
-To deploy the Payer Services solution container stack, run the following command:
+To deploy the Payer Services solution container stack, run the following command from within `./sample-deploy`:
 ```bash
 docker-compose -f docker-compose-hp.yml --env-file hp.container.env up
 ```
@@ -113,7 +113,7 @@ However, before this can be run, the values in `hp.container.env` must be popula
 You will notice that the variables themselves, or their corresponding defaults in the `docker-compose.yml` file, point to other relative directories or files.
 
 ### docker-compose-iam and iam.container.env
-To deploy the Intersystems API Manager container stack, run the following command:
+To deploy the Intersystems API Manager container stack, run the following command from within `./sample-deploy/`:
 ```bash
 docker-compose -f docker-compose-iam.yml --env-file iam.container.env up
 ```
@@ -140,4 +140,4 @@ Required for IAM. A JSON file that contains IAM settings information. Edit this 
 
 ## sample_configs
 
-This directory contains sample config files for your solution application. The configs are not for direct use and are subject to changes.
+This directory contains sample configuration files for your solution application. The configs are not for direct use and are subject to changes.
