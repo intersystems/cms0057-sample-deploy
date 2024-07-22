@@ -32,7 +32,7 @@ While the directory structure can be altered, this requires that you override va
 
 ## sample_deploy
 
-This directory has the following sample files for container stack deployment. Note that it includes deployment files for both Payer Services and InterSystems API Manager (IAM) containers in a single directory. Each product, however, runs in its own independent container stack.
+This directory has the following sample files for container stack deployment. Note that it includes deployment files for both Payer Services and InterSystems API Manager (IAM) containers in a single directory. Each product, however, runs in its own independent container stack. Therefore, you may maintain a separate, independent directory like this for each of your components, and deploy your stacks on same or different hosts.
 
 The Payer Services container stack deployment files include:
   - IRIS configurations under `./config/`, including:
@@ -101,37 +101,36 @@ If you are already familiar with the InterSystems Web Gateway, a sample docker-c
 
 ### docker-compose-hp and hp.container.env
 
-To deploy the Payer Services solution container stack, run the following command from within `./sample-deploy`:
+To deploy the Payer Services solution container stack, make sure your environment file `hp.container.env` is configured, then run the following command from within `./sample-deploy`:
 ```bash
 docker-compose -f docker-compose-hp.yml --env-file hp.container.env up
 ```
-
 This command configures a single Payer Services application stack consisting of two containers: a Web Gateway instance and an IRIS for Health instance.
 
-However, before this can be run, the values in `hp.container.env` must be populated. The file itself describes what each variable does and this is further fleshed out in the [InterSystems Payer Services user documentation](https://docs.intersystems.com/hslatest/csp/docbook/DocBook.UI.Page.cls?KEY=HSPSDeploy_container#HSPSDeploy_container_env_file) and you can see the usage in the  `docker-compose-hp.yml` file.  
+Before this can be run, the values in `hp.container.env` must be populated. The file itself describes what each variable does and this is further fleshed out in the [InterSystems Payer Services user documentation](https://docs.intersystems.com/hslatest/csp/docbook/DocBook.UI.Page.cls?KEY=HSPSDeploy_container#HSPSDeploy_container_env_file) and you can see the usage in the  `docker-compose-hp.yml` file.  
 
 You will notice that the variables themselves, or their corresponding defaults in the `docker-compose.yml` file, point to other relative directories or files.
 
 ### docker-compose-iam and iam.container.env
-To deploy the Intersystems API Manager container stack, run the following command from within `./sample-deploy/`:
+To deploy the Intersystems API Manager container stack, make sure your environment file `iam.container.env` is configured, then run the following command from within `./sample-deploy/`:
 ```bash
 docker-compose -f docker-compose-iam.yml --env-file iam.container.env up
 ```
-However, before this can be run, the values in `iam.container.env` must be populated. The file itself describes what each variable does and this is further fleshed out in the [InterSystems Payer Services user documentation](https://docs.intersystems.com/hslatest/csp/docbook/DocBook.UI.Page.cls?KEY=HSPSDeploy_apimgr) and you can see the usage in the `docker-compose-iam.yml` file.  
+This command configures a single IAM stack consisting of 4 containers: iam, iam-register, iam-migrations, and db. Note that `iam-migrations` (also `iam-register` if endpoints are configured from JSON file) container is expected to complete work and exit shortly after starting.
 
-This command configures a single IAM stack consisting of 4 containers: iam, iam-register, iam-migrations, and db.
+Before this can be run, the values in `iam.container.env` must be populated. The file itself describes what each variable does and this is further fleshed out in the [InterSystems Payer Services user documentation](https://docs.intersystems.com/hslatest/csp/docbook/DocBook.UI.Page.cls?KEY=HSPSDeploy_apimgr) and you can see the usage in the `docker-compose-iam.yml` file.  
 
-This IAM stack is independent from solution container stack, it uses an http connection to communicate with Payer Services APIs configured with IAM. Make sure your solution container stack and IAM stack are within the same network subnet.
+This IAM stack is independent from solution container stack, it uses an http connection to communicate with Payer Services APIs configured with IAM. You may also deploy IAM stack from a separate directory. Make sure your solution container stack and IAM stack are within the same network subnet.
 
-You also need `iam-register-entrypoint.sh` and `iam-services-config.JSON` configured in order to deploy IAM and  use it with your solution stack:
+You also need `iam-register-entrypoint.sh` and `iam-services-config.JSON` configured in order to register API endpoints on IAM during deployment, and use it with your solution stack:
 
 ### iam-register-entrypoint.sh
 
-Required for IAM. An entrypoint script, containing curl calls to register settings with the IAM container. You should not have to edit this.
+Required for registering endpoints on IAM at deployment time. An entrypoint script, containing curl calls to register settings with the IAM container. You should not have to edit this.
 
 ### iam-services-config.JSON
 
-Required for IAM. A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the "services".
+Required for registering endpoints on IAM at deployment time. A JSON file that contains IAM settings information. Edit this file to identify each Payer Services component that you deploy as one of the "services".
 
  - The `url` of the service should be a FQDN pointing to the solution component container.
  - Under each service, you may add one or more routes to match requests:
