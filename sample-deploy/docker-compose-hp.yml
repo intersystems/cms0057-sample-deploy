@@ -40,7 +40,7 @@ services:
     restart: "no"
     command:
       --key ${ISC_CONFIG_DIRECTORY:-/config/iris}/iris.key
-      --instance ${INSTANCE_NAME}
+      --instance IRIS
     environment:
       - ISC_CPF_MERGE_FILE_NAME=${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
       - ISC_CONFIG_DIRECTORY=${ISC_CONFIG_DIRECTORY:-/config/iris}
