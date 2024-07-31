@@ -10,7 +10,7 @@ A single Payer Services application (component) consists of a stack with two con
 - a Web Gateway container
 - an InterSystems IRIS For Health&trade; instance container
   
-A separate InterSystems API Manager (IAM) container stack can be deployed to manage the APIs for all of the Payer Services solution applications that you deploy.
+A separate InterSystems API Manager (IAM) container stack can be deployed to manage the APIs for all of the Payer Services solution applications that you deploy. Using IAM requires a separate IRIS instance (therefore another stack) to host yopur IAM-enabled licensy key.
 
 Below we describe the sample files provided in this repository to deploy Payer Services solution applications.
 - [Repository Structure](#repository-structure)
@@ -28,11 +28,11 @@ Below we describe the sample files provided in this repository to deploy Payer S
 This repository is structured into two top level directories: `sample_deploy` and `sample_configs`.
 - `sample_deploy` contains the directory structure recommended to deploy the component and IAM container stacks. 
 While the directory structure can be altered, this requires that you override variables in the environment (.env) files.
-- `sample_configs` contains example files for configuring Payer Services components and InterSystems API Manager.
+- `sample_configs` contains example files for configuring Payer Services components and a separate InterSystems API Manager component.
 
 ## sample_deploy
 
-This directory has the following sample files for container stack deployment. Note that it includes deployment files for both Payer Services and InterSystems API Manager (IAM) containers in a single directory. Each product, however, runs in its own independent container stack. Therefore, you may maintain a separate, independent directory like this for each of your components, and deploy your stacks on same or different hosts.
+This directory has the following sample files for container stack deployment. Note that it includes deployment files for both Payer Services (under `./HP`) and InterSystems API Manager (IAM) containers (under `./IAM`). Each product runs in its own independent container stack. You may add more sub-directories like this for other HP components, and deploy your stacks on same or different hosts.
 
 The Payer Services container stack deployment files include:
   - IRIS configurations under `./config/`, including:
@@ -45,30 +45,48 @@ The Payer Services container stack deployment files include:
   - hp.container.env
 
 The IAM container stack deployment files include:
+  - IRIS configurations under `./config/`, including:
+    - iris.key
+    - merge.cpf
+  - web-gateway deployment files under `./web-gateway/`, including:
+    - SSL certificates
+    - web gateway configurations
   - docker-compose-iam.yml
   - iam.container.env
   - iam-register-entrypoint.sh
   - iam-services-config.JSON
 
-The (combined) directory structure is as follows:
+The directory structure is as follows:
 ```
 📦sample_deploy
- ┣ 📂config
- ┃ ┗ 📂iris
- ┃   ┣ 📜iris.key (iam or non-iam)
- ┃   ┗ 📜merge.cpf
- ┣ 📂web-gateway
- ┃ ┣ 📂certificate
- ┃ ┃ ┣ 📜ssl-cert.key
- ┃ ┃ ┗ 📜ssl-cert.pem
- ┃ ┣ 📜CSP.conf
- ┃ ┗ 📜CSP.ini
- ┣ 📜hp.container.env
- ┣ 📜iam.container.env
- ┣ 📜docker-compose-hp.yml
- ┣ 📜docker-compose-iam.yml
- ┣ 📜iam-register-entrypoint.sh
- ┗ 📜iam-services-config.json
+ ┣ 📂HP
+ ┃  ┣ 📂config
+ ┃  ┃ ┗ 📂iris
+ ┃  ┃   ┣ 📜iris.key (Payer Services Solution)
+ ┃  ┃   ┗ 📜merge.cpf (Payer Services Configs)
+ ┃  ┣ 📂web-gateway
+ ┃  ┃ ┣ 📂certificate
+ ┃  ┃ ┃ ┣ 📜ssl-cert.key
+ ┃  ┃ ┃ ┗ 📜ssl-cert.pem
+ ┃  ┃ ┣ 📜CSP.conf
+ ┃  ┃ ┗ 📜CSP.ini
+ ┃  ┣ 📜hp.container.env
+ ┃  ┗ 📜docker-compose-hp.yml
+ ┗ 📂IAM
+    ┣ 📂config
+    ┃ ┗ 📂iris
+    ┃   ┣ 📜iris.key (IAM Enabled)
+    ┃   ┗ 📜merge.cpf (IAM Configs)
+    ┣ 📂web-gateway
+    ┃ ┣ 📂certificate
+    ┃ ┃ ┣ 📜ssl-cert.key
+    ┃ ┃ ┗ 📜ssl-cert.pem
+    ┃ ┣ 📜CSP.conf
+    ┃ ┗ 📜CSP.ini
+    ┣ 📜iam.container.env
+    ┣ 📜docker-compose-iam.yml
+    ┣ 📜iam-register-entrypoint.sh
+    ┗ 📜iam-services-config.json
 ```
 
 Below we break down the roles of the various directories and files. For directories and files whose locations can be changed, the corresponding environment variables that control the directory locations are also referenced. Note that the directory-related environment variables are optional. If you do not specify directory-related environment variable values, then you **must** use the default directory structure referenced in the above image and detailed below.
@@ -84,9 +102,9 @@ This directory contains all necessary configuration-related files used at contai
   - No data ingestion directory is provided by default. You may pass data
    into a service using the REST APIs.
 
-This directory MUST consist of, at a minimum, an `iris.key` file for the license key of the corresponding solution image that is being deployed. If you wish to use InterSystems API Manager features for your solution, then you must use an IAM-enabled license.
+This directory MUST consist of, at a minimum, an `iris.key` file for the license key of the corresponding solution image that is being deployed. If you wish to use InterSystems API Manager features for your solution, then you must use an IAM-enabled license in your IAM stack.
 
-It is also required that a `merge.cpf` file be included if there are any startup-related configuration settings. The example file provided sets up the API Manager for your solution. The IAM Password needs to be set in this file (and the value should match the IAM_USER_PWD environment variable in `iam.container.env`).
+It is also required that a `merge.cpf` file be included if there are any startup-related configuration settings. In IAM stack, the IAM Password needs to be set in this file (and the value should match the IAM_USER_PWD environment variable in `iam.container.env`). The example file provided sets up the API Manager for your solution.
 
 Environment variables related to this directory: 
 - `EXTERNAL_IRIS_CONFIG_DIRECTORY`
@@ -101,7 +119,7 @@ If you are already familiar with the InterSystems Web Gateway, a sample docker-c
 
 ### docker-compose-hp and hp.container.env
 
-To deploy the Payer Services solution container stack, make sure your environment file `hp.container.env` is configured, then run the following command from within `./sample-deploy`:
+To deploy the Payer Services solution container stack, make sure your environment file `hp.container.env` is configured, then run the following command from within `./sample-deploy/HP/`:
 ```bash
 docker-compose -f docker-compose-hp.yml --env-file hp.container.env up
 ```
@@ -112,7 +130,7 @@ Before this can be run, the values in `hp.container.env` must be populated. The 
 You will notice that the variables themselves, or their corresponding defaults in the `docker-compose.yml` file, point to other relative directories or files.
 
 ### docker-compose-iam and iam.container.env
-To deploy the Intersystems API Manager container stack, make sure your environment file `iam.container.env` is configured, then run the following command from within `./sample-deploy/`:
+To deploy the Intersystems API Manager container stack, make sure your environment file `iam.container.env` is configured, then run the following command from within `./sample-deploy/IAM/`:
 ```bash
 docker-compose -f docker-compose-iam.yml --env-file iam.container.env up
 ```
@@ -120,7 +138,7 @@ This command configures a single IAM stack consisting of 4 containers: iam, iam-
 
 Before this can be run, the values in `iam.container.env` must be populated. The file itself describes what each variable does and this is further fleshed out in the [InterSystems Payer Services user documentation](https://docs.intersystems.com/hslatest/csp/docbook/DocBook.UI.Page.cls?KEY=HSPSDeploy_apimgr) and you can see the usage in the `docker-compose-iam.yml` file.  
 
-This IAM stack is independent from solution container stack, it uses an http connection to communicate with Payer Services APIs configured with IAM. You may also deploy IAM stack from a separate directory. Make sure your solution container stack and IAM stack are within the same network subnet.
+This IAM stack is independent from solution container stack, it uses an http connection to communicate with Payer Services APIs configured with IAM. Make sure your solution container stack and IAM stack are within the same network subnet.
 
 You also need `iam-register-entrypoint.sh` and `iam-services-config.JSON` configured in order to register API endpoints on IAM during deployment, and use it with your solution stack:
 
@@ -140,3 +158,4 @@ Required for registering endpoints on IAM at deployment time. A JSON file that c
 ## sample_configs
 
 This directory contains sample configuration files for your solution application. The configs are not for direct use and are subject to changes.
+You may move sample config files to `/config` folder under your deploy directory, then reference the file path in you docker-compose and `.container.env` file.
