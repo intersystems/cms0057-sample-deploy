@@ -2,7 +2,9 @@
     "services": [
         {
             "name": "<Component Name>",
-            "url": "https://<HOSTNAME>:<WEBGATEWAY_SECURE_PORT>",
+            "hostname": "<HP Component API Hostname>",
+            "port": "<HP Component Webgateway Secure Port>",
+            "url": "<Service Url>",
             "routes": [
                 {
                     "name": "API_Route_1",
@@ -18,7 +20,9 @@
         },
         {
             "name": "<Another Component Name>",
-            "url": "https://<ANOTHER_HOSTNAME>:<ANOTHER_WEBGATEWAY_SECURE_PORT>",
+            "hostname": "<HP Component API Hostname>",
+            "port": "<HP Component Webgateway Secure Port>",
+            "url": "<Serivce Url>",
             "routes": [
                 {
                     "name": "API_Route_2",
@@ -29,32 +33,6 @@
                         "https"
                     ],
                     "strip_path": true
-                }
-            ]
-        },
-        {
-            "name": "MonitorService",
-            "url": "/api/monitor",
-            "routes": [
-                {
-                    "name": "MetricsRoute",
-                    "paths": [
-                        "/metrics"
-                    ],
-                    "protocols": [
-                        "https"
-                    ],
-                    "strip_path": false
-                },
-                {
-                    "name": "AlertRoute",
-                    "paths": [
-                        "/alerts"
-                    ],
-                    "protocols": [
-                        "https"
-                    ],
-                    "strip_path": false
                 }
             ]
         }

@@ -157,8 +157,6 @@ services:
      IAM_PORT: ${IAM_KONG_API_PORT:-8447}
      IAM_USER: IAM
      IAM_USER_PWD: ${IAM_USER_PWD}
-     INSTANCE_WEBGATEWAY_HOSTNAME: ${HP_HOSTNAME}
-     INSTANCE_WEBGATEWAY_PORT: ${HP_WEBGATEWAY_SECURE_PORT:-8443}
     depends_on:
       - iam
     extra_hosts:
