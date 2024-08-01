@@ -47,7 +47,6 @@ The Payer Services (`./HP/`) container stack deployment files include:
 The IAM (`./IAM/`) container stack deployment files include:
   - IRIS configuration files under `./IAM/config/`, including:
     - `iris.key`
-    - `merge.cpf`
   - web-gateway deployment files under `./IAM/web-gateway/`, including:
     - SSL certificates
     - web gateway configurations
@@ -63,7 +62,7 @@ The directory structure is as follows:
  ┃  ┣ 📂config
  ┃  ┃ ┗ 📂iris
  ┃  ┃   ┣ 📜iris.key (Payer Services Solution)
- ┃  ┃   ┗ 📜merge.cpf (Payer Services Configs)
+ ┃  ┃   ┗ 📜merge.cpf (Payer Services Configs e.g. enable IAM)
  ┃  ┣ 📂web-gateway
  ┃  ┃ ┣ 📂certificate
  ┃  ┃ ┃ ┣ 📜ssl-cert.key
@@ -75,8 +74,7 @@ The directory structure is as follows:
  ┗ 📂IAM
     ┣ 📂config
     ┃ ┗ 📂iris
-    ┃   ┣ 📜iris.key (IAM Enabled)
-    ┃   ┗ 📜merge.cpf (IAM Configs)
+    ┃   ┗ 📜iris.key (IAM Enabled)
     ┣ 📂web-gateway
     ┃ ┣ 📂certificate
     ┃ ┃ ┣ 📜ssl-cert.key
