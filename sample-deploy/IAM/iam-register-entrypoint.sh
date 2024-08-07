@@ -23,6 +23,8 @@ else
         # Register service
         SERVICE_NAME=$(jq -r ".services[$i].name" $CONFIG_FILE)
         SERVICE_URL=$(jq -r ".services[$i].url" $CONFIG_FILE)
+        INSTANCE_WEBGATEWAY_HOSTNAME=$(jq -r ".services[$i].hostname" $CONFIG_FILE)
+        INSTANCE_WEBGATEWAY_PORT=$(jq -r ".services[$i].port" $CONFIG_FILE)
         curl -i -X POST --url https://${IAM_HOSTNAME}:${IAM_PORT}/services/ -u ${IAM_USER}:${IAM_USER_PWD} --data "name=${SERVICE_NAME}" --data "url=https://${INSTANCE_WEBGATEWAY_HOSTNAME}:${INSTANCE_WEBGATEWAY_PORT}${SERVICE_URL}" --cacert /certs/tls.crt >> $DEVICE
      
         # Register routes for the service

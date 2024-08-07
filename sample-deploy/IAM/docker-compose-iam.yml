@@ -8,9 +8,57 @@ networks:
       config:
         - subnet: ${NETWORK_SUBNET:-192.168.20.0/24}
 services:
+  webgateway:
+    image: ${WEBGATEWAY_IMAGE_PATH}:${WEBGATEWAY_IMAGE_VERSION}
+    init: true
+    hostname: ${HOSTNAME}
+    container_name: ${COMPOSE_PROJECT_NAME}-webgateway
+    ports:
+    - ${WEBGATEWAY_INSECURE_PORT:-890}:80
+    - ${WEBGATEWAY_SECURE_PORT:-8449}:443
+    restart: "no"
+    command:
+      --ssl
+    volumes:
+    - ./webgateway/CSP.ini:/opt/webgateway/bin/CSP.ini
+    - ./webgateway/CSP.conf:/etc/apache2/mods-available/CSP.conf
+    - ./webgateway/certificate/ssl-cert.key:/irissys/tls/webgateway/tls.key
+    - ./webgateway/certificate/ssl-cert.pem:/irissys/tls/webgateway/tls.crt
+    networks:
+      federated-network:
+        ipv4_address: ${WEBGATEWAY_NETWORK_IP_ADDRESS:-192.168.20.10}
+  instance:
+    image: ${IRIS_IMAGE_PATH}:${IRIS_IMAGE_VERSION}
+    init: true
+    hostname: ${HOSTNAME}
+    container_name: ${COMPOSE_PROJECT_NAME}-instance
+    ports:
+    - ${IRIS_SUPERSERVER_PORT:-1992}:1972
+    - ${IRIS_WEBSERVER_PORT:-52793}:52773
+    extra_hosts:
+    - ${HOSTNAME}:${HOSTNAME_IP}
+    restart: "no"
+    command:
+      --key ${ISC_CONFIG_DIRECTORY:-/config/iris}/iris.key
+      --instance ${IRIS_INSTANCE_NAME}
+    environment:
+      - ISC_CPF_MERGE_FILE_NAME=${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
+      - ISC_CONFIG_DIRECTORY=${ISC_CONFIG_DIRECTORY:-/config/iris}
+      - ISC_DATA_DIRECTORY=${ISC_DATA_DIRECTORY:-/dur/iris}
+      - ISC_CPF_MERGE_FILE=${ISC_CONFIG_DIRECTORY:-/config/iris}/${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
+    volumes:
+    - type: bind
+      source: ${EXTERNAL_IRIS_CONFIG_DIRECTORY:-./config/iris}
+      target: ${ISC_CONFIG_DIRECTORY:-/config/iris}
+    - type: bind
+      source: ${EXTERNAL_ISC_DATA_ROOT_DIRECTORY:-./dur}
+      target: ${ISC_DATA_ROOT_DIRECTORY:-/dur}
+    networks:
+      federated-network:
+        ipv4_address: ${INSTANCE_NETWORK_IP_ADDRESS:-192.168.20.11}
   iam-migrations:
     image: ${ISC_IAM_IMAGE}
-    hostname: ${IAM_UNIQUE_HOSTNAME}
+    hostname: ${HOSTNAME}
     command: bash -c "kong migrations bootstrap; kong migrations up; kong migrations finish -v -vv"
     depends_on:
       db:
@@ -22,15 +70,15 @@ services:
       KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-iam}
       KONG_PG_USER: ${KONG_PG_USER:-iam}
       KONG_CASSANDRA_CONTACT_POINTS: db
-      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${IRIS_HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
+      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8449}/api/iam/license
     restart: on-failure
     links:
       - db:db
     extra_hosts:
-      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
+      - ${HOSTNAME}:${HOSTNAME_IP}
   iam:
     image: ${ISC_IAM_IMAGE}
-    hostname: ${IAM_UNIQUE_HOSTNAME}
+    hostname: ${HOSTNAME}
     entrypoint: ["/bin/sh", "-c", "export ISC_CA_CERT=$(cat /certs/tls.crt) && /docker-entrypoint.sh kong docker-start"]
     depends_on:
       iam-migrations:
@@ -47,7 +95,7 @@ services:
       KONG_STATUS_SSL_CERT_KEY: /certs/tls.key
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_LISTEN: 0.0.0.0:${IAM_PORT:-8444} ssl
+      KONG_ADMIN_LISTEN: 0.0.0.0:8444 ssl
       KONG_ANONYMOUS_REPORTS: 'off'
       KONG_CASSANDRA_CONTACT_POINTS: db
       KONG_DATABASE: postgres
@@ -59,34 +107,38 @@ services:
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_PORTAL: 'on'
       KONG_PORTAL_GUI_PROTOCOL: https
-      KONG_PORTAL_GUI_HOST: ${IAM_UNIQUE_HOSTNAME}:${IAM_KONG_PORTAL_PORT:-8446}
-      KONG_ADMIN_GUI_URL: https://${IAM_UNIQUE_HOSTNAME}:${IAM_KONG_ADMIN_PORT:-8445}
-      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${IRIS_HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8443}/api/iam/license
+      KONG_PORTAL_GUI_HOST: ${HOSTNAME}:${IAM_KONG_UI_PORT:-8448}
+      KONG_ADMIN_GUI_URL: https://${HOSTNAME}:${IAM_KONG_UI_PORT:-8448}
+      KONG_PORT_MAPS: ${IAM_PORT:-8446}:8443, ${IAM_KONG_API_PORT:-8447}:8444, ${IAM_KONG_UI_PORT:-8448}:8445
+      ISC_IRIS_URL: IAM:${IAM_USER_PWD}@${HOSTNAME}:${WEBGATEWAY_SECURE_PORT:-8449}/api/iam/license
     links:
       - db:db
     ports:
-      - target: ${WEBGATEWAY_SECURE_PORT:-8443}
-        published: ${IAM_KONG_PORTAL_PORT:-8446}
+      - target: 8443
+        published: ${IAM_PORT:-8446}
         protocol: tcp
-      - target: ${IAM_PORT:-8444}
-        published: ${IAM_PORT:-8444}
+      - target: 8444
+        published: ${IAM_KONG_API_PORT:-8447}
         protocol: tcp
-      - target: ${IAM_KONG_ADMIN_PORT:-8445}
-        published: ${IAM_KONG_ADMIN_PORT:-8445}
+      - target: 8445
+        published: ${IAM_KONG_UI_PORT:-8448}
         protocol: tcp
     restart: on-failure
     extra_hosts:
-      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
+      - ${HOSTNAME}:${HOSTNAME_IP}
     volumes:
       - ./webgateway/certificate/ssl-cert.key:/certs/tls.key
       - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
   db:
     image: postgres:14.5
-    hostname: ${IAM_UNIQUE_HOSTNAME}
+    hostname: ${HOSTNAME}
     environment:
       POSTGRES_DB: ${KONG_PG_DATABASE:-iam}
       POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:-iam}
       POSTGRES_USER: ${KONG_PG_USER:-iam}
+    depends_on:
+      instance:
+        condition: service_healthy
     volumes:
       - 'pgdata14:/var/lib/postgresql/data'
     healthcheck:
@@ -97,20 +149,18 @@ services:
     restart: on-failure
     stdin_open: true
     extra_hosts:
-      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
+      - ${HOSTNAME}:${HOSTNAME_IP}
   iam-register:
     image: alpine/curl
     environment:
-     IAM_HOSTNAME: ${IRIS_HOSTNAME}
-     IAM_PORT: ${IAM_PORT:-8444}
+     IAM_HOSTNAME: ${HOSTNAME}
+     IAM_PORT: ${IAM_KONG_API_PORT:-8447}
      IAM_USER: IAM
      IAM_USER_PWD: ${IAM_USER_PWD}
-     INSTANCE_WEBGATEWAY_HOSTNAME: ${IRIS_HOSTNAME}
-     INSTANCE_WEBGATEWAY_PORT: ${WEBGATEWAY_SECURE_PORT:-8443}
     depends_on:
       - iam
     extra_hosts:
-      - ${IRIS_HOSTNAME}:${IRIS_HOSTNAME_IP}
+      - ${HOSTNAME}:${HOSTNAME_IP}
     volumes:
       - ./iam-register-entrypoint.sh:/iam-register-entrypoint.sh
       - ./iam-services-config.JSON:/iam-services-config.JSON
