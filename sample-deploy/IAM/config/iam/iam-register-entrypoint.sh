@@ -4,7 +4,7 @@
 apk add --no-cache jq
  
 # Load configuration from JSON
-CONFIG_FILE="/iam-services-config.JSON"
+CONFIG_FILE="${IAM_CONFIG_DIRECTORY}/iam-services-config.json"
  
 DEVICE=/dev/stdout
  

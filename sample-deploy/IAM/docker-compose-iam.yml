@@ -129,6 +129,8 @@ services:
     volumes:
       - ./webgateway/certificate/ssl-cert.key:/certs/tls.key
       - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
+      - ${EXTERNAL_IAM_CONFIG_DIRECTORY:-./config/iam}/${IAM_REGISTER_SCRIPT:-iam-register-entrypoint.sh}:${IAM_CONFIG_DIRECTORY:-/config/iam}/iam-register-entrypoint.sh
+      - ${EXTERNAL_IAM_CONFIG_DIRECTORY:-./config/iam}/${IAM_REGISTER_CONFIG:-iam-services-config.json}:${IAM_CONFIG_DIRECTORY:-/config/iam}/iam-services-config.json
   db:
     image: postgres:14.5
     hostname: ${HOSTNAME}
@@ -157,16 +159,17 @@ services:
      IAM_PORT: ${IAM_KONG_API_PORT:-8447}
      IAM_USER: IAM
      IAM_USER_PWD: ${IAM_USER_PWD}
+     IAM_CONFIG_DIRECTORY: ${IAM_CONFIG_DIRECTORY:-/config/iam}
     depends_on:
       - iam
     extra_hosts:
       - ${HOSTNAME}:${HOSTNAME_IP}
     volumes:
-      - ./iam-register-entrypoint.sh:/iam-register-entrypoint.sh
-      - ./iam-services-config.JSON:/iam-services-config.JSON
+      - ${EXTERNAL_IAM_CONFIG_DIRECTORY:-./config/iam}/${IAM_REGISTER_SCRIPT:-iam-register-entrypoint.sh}:${IAM_CONFIG_DIRECTORY:-/config/iam}/iam-register-entrypoint.sh
+      - ${EXTERNAL_IAM_CONFIG_DIRECTORY:-./config/iam}/${IAM_REGISTER_CONFIG:-iam-services-config.json}:${IAM_CONFIG_DIRECTORY:-/config/iam}/iam-services-config.json
       - ./webgateway/certificate/ssl-cert.key:/certs/tls.key
       - ./webgateway/certificate/ssl-cert.pem:/certs/tls.crt
-    entrypoint: ["/bin/sh", "/iam-register-entrypoint.sh"]
+    entrypoint: ["/bin/sh", "${IAM_CONFIG_DIRECTORY:-/config/iam}/iam-register-entrypoint.sh"]
     restart: on-failure
 volumes:
   pgdata14:
