@@ -55,7 +55,7 @@ services:
       target: ${ISC_DATA_ROOT_DIRECTORY:-/dur}
     networks:
       federated-network:
-        ipv4_address: ${INSTANCE_NETWORK_IP_ADDRESS:-192.168.20.11}
+        ipv4_address: ${IRIS_NETWORK_IP_ADDRESS:-192.168.20.11}
   iam-migrations:
     image: ${ISC_IAM_IMAGE}
     hostname: ${HOSTNAME}
