@@ -1,6 +1,13 @@
 <!-- omit in toc -->
 # cms0057-sample-deploy
 
+## Note ##
+This repository is no longer up to date. For latest sample configurations of Payer Services components, please see repository [InterSystems Payer Services](https://github.com/intersystems/Payer-Services).
+
+The following content is for record only, and should not be used in any new deployment.
+
+---
+
 This repository contains sample deployment files to deploy InterSystems Payer Services solutions. Note that these are sample files intended to be used along with the [InterSystems Payer Service user documentation](https://docs.intersystems.com/hslatest/csp/docbook/DocBook.UI.Page.cls?KEY=HSPSDeploy_intro).
 
 **These sample files ARE NOT intended for direct usage in production environments.**
