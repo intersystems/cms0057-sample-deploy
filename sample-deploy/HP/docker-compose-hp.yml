@@ -46,10 +46,14 @@ services:
       - ISC_CONFIG_DIRECTORY=${ISC_CONFIG_DIRECTORY:-/config/iris}
       - ISC_DATA_DIRECTORY=${ISC_DATA_DIRECTORY:-/dur/iris}
       - ISC_CPF_MERGE_FILE=${ISC_CONFIG_DIRECTORY:-/config/iris}/${ISC_CPF_MERGE_FILE_NAME:-merge.cpf}
+      - HP_CONFIG_FILE=${HP_CONFIG_DIRECTORY:-/config/hp}/${HP_CONFIG_FILE_NAME:-hp-config.json}
     volumes:
     - type: bind
       source: ${EXTERNAL_IRIS_CONFIG_DIRECTORY:-./config/iris}
       target: ${ISC_CONFIG_DIRECTORY:-/config/iris}
+    - type: bind
+      source: ${EXTERNAL_HP_CONFIG_DIRECTORY:-./config/hp}
+      target: ${HP_CONFIG_DIRECTORY:-/config/hp}
     - type: bind
       source: ${EXTERNAL_ISC_DATA_ROOT_DIRECTORY:-./dur}
       target: ${ISC_DATA_ROOT_DIRECTORY:-/dur}

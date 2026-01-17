@@ -1,0 +1,38 @@
+{
+    "oauth-config": {
+        "server_endpoint": "https://your-oauth-server/oauth2/default",
+        "server_configs": {},
+        "client_list": [
+            {
+                "name": "TestCLient",
+                "type": "UserClient"
+            },
+            {
+                "name": "InstanceResourceServer",
+                "type": "ResourceServer"
+            }
+        ],
+        "token_manipuilation": []
+
+    },
+    "api-config":{
+        "UM_connection": {
+            "username": "test",
+            "credential": "test",
+            "endpoint": "your-um-integration-endpoint"
+        },
+        "PDexMM_settings": {
+            "mpiServiceClass": "HS.HP.PDexMM.HSPIMemberMatchService",
+            "mpiMemberMatchEndpoint": "https://<your-hostname>/api/healthshare-rest/hspi/patient/$member-match",
+            "sslConfig": "Your.SSL.Config",
+            "consentServiceClass": "HS.HP.PDexMM.MemberConsentService",
+            "consentServiceEndpoint": "https://www.google.com"
+        }
+    },
+    "pas-config":{
+
+    },
+    "dtr-config":{
+        
+    }
+}
